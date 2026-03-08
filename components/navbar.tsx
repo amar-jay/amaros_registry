@@ -42,6 +42,12 @@ export async function Navbar({ children }: { children?: React.ReactNode }) {
             Explore
           </Link>
           <Link
+            href="/publish"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Publish
+          </Link>
+          <Link
             href="/#concepts"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
