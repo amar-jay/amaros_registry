@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { HeroSearch } from "@/components/hero-search";
-import { NodeBeamVisualization, CrossOrgBeamVisualization } from "@/components/node-beam";
+import { NodeBeamVisualization, CrossOrgBeamVisualization, SubscriberFirstBeam } from "@/components/node-beam";
 import { listNodes, getNodeManifest, type NodeManifest } from "@/lib/r2";
 import {
   IconDownload,
@@ -23,10 +23,8 @@ import {
   IconCloudComputing,
   IconHeartbeat,
   IconArrowRight,
-  IconBrandGithub,
   IconTerminal2,
   IconHexagons,
-  IconCpu,
   IconWorldWww,
   IconChartDots3,
   IconPackage,
@@ -42,6 +40,7 @@ import {
 } from "@tabler/icons-react";
 import type { Icon } from "@tabler/icons-react";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { Navbar } from "@/components/navbar";
 
 /** Map node names or tags to appropriate icons */
 const NODE_ICON_MAP: Record<string, Icon> = {
@@ -131,35 +130,9 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-lg">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <IconTopologyRing3 className="size-6 text-primary" />
-            <span className="text-lg font-bold tracking-tight">
-              AMAROS<span className="text-muted-foreground font-normal"> Registry</span>
-            </span>
-          </div>
-
-          <div className="hidden items-center gap-6 text-sm md:flex">
-            <Link href="/explore" className="text-muted-foreground hover:text-foreground transition-colors">
-              Explore
-            </Link>
-            <a href="#concepts" className="text-muted-foreground hover:text-foreground transition-colors">
-              Concepts
-            </a>
-            <a href="#install" className="text-muted-foreground hover:text-foreground transition-colors">
-              Get Started
-            </a>
-            <Button variant="outline" size="sm" asChild>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-                <IconBrandGithub className="size-4" />
-                GitHub
-              </a>
-            </Button>
-          </div>
-        </div>
-      	<ScrollProgress className="sticky bottom-0" />
-      </nav>
+      <Navbar>
+        <ScrollProgress className="sticky bottom-0" />
+      </Navbar>
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
@@ -388,26 +361,6 @@ export default async function Home() {
         <div className="mx-auto max-w-2xl">
           <NodeBeamVisualization />
         </div>
-        <div className="mx-auto mt-8 grid max-w-2xl gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border bg-card p-4">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <IconCpu className="size-4 text-primary" />
-              Same Organization
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Direct function calls, shared memory, zero-copy data.
-            </p>
-          </div>
-          <div className="rounded-lg border bg-card p-4">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <IconNetwork className="size-4 text-primary" />
-              Cross Organization
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Message passing over topics, serialized payloads, heartbeat-verified.
-            </p>
-          </div>
-        </div>
       </section>
 
       <Separator />
@@ -427,6 +380,26 @@ export default async function Home() {
         <p className="mx-auto mt-6 max-w-xl text-center text-sm text-muted-foreground">
           Nodes within an org use direct function calls. Across orgs, masters
           relay messages over topics with serialized payloads — like ROS meets ZeroMQ.
+        </p>
+      </section>
+
+      <Separator />
+
+      {/* ── Subscriber-First Topics ── */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="mb-10 text-center">
+          <h2 className="text-2xl font-bold tracking-tight">Subscriber-First Topics</h2>
+          <p className="mt-2 text-muted-foreground">
+            A topic only exists when a subscriber is listening. Any node
+            can publish — messages flow from publishers through the topic to the subscriber.
+          </p>
+        </div>
+        <div className="mx-auto max-w-2xl">
+          <SubscriberFirstBeam />
+        </div>
+        <p className="mx-auto mt-6 max-w-xl text-center text-sm text-muted-foreground">
+          No subscriber, no topic. Publishers fire into the void unless
+          someone is listening — ensuring every message has a destination.
         </p>
       </section>
 

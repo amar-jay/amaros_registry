@@ -40,6 +40,7 @@ import {
   IconVersions,
   IconInfoCircle,
 } from "@tabler/icons-react";
+import { Navbar } from "@/components/navbar";
 import { getNodeManifest, getNodeReadme, type NodeManifest } from "@/lib/r2";
 
 // ── Data fetching ────────────────────────────────────────────
@@ -110,39 +111,7 @@ export default async function NodePage({
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-lg">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <IconTopologyRing3 className="size-6 text-primary" />
-            <span className="text-lg font-bold tracking-tight">
-              AMAROS
-              <span className="text-muted-foreground font-normal">
-                {" "}
-                Registry
-              </span>
-            </span>
-          </Link>
-
-          <div className="hidden items-center gap-6 text-sm md:flex">
-            <Link
-              href="/explore"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Explore
-            </Link>
-            <Button variant="outline" size="sm" asChild>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <IconBrandGithub className="size-4" />
-                GitHub
-              </a>
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ── Breadcrumb & back ── */}
       <div className="mx-auto max-w-6xl px-6 pt-6">
