@@ -1,9 +1,5 @@
 import * as React from 'react'
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  MoreHorizontalIcon,
-} from 'lucide-react'
+import { IconChevronLeft as ChevronLeftIcon, IconChevronRight as ChevronRightIcon, IconDots as MoreHorizontalIcon } from '@tabler/icons-react'
 
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'

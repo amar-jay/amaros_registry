@@ -28,7 +28,12 @@ async function getAllNodes(): Promise<NodeManifest[]> {
   return manifests;
 }
 
-export default async function ExplorePage() {
+export default async function ExplorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q: initialQuery } = await searchParams;
   const nodes = await getAllNodes();
 
   const totalDl = nodes.reduce(
@@ -135,7 +140,7 @@ export default async function ExplorePage() {
 
       {/* ── Grid ── */}
       <section className="mx-auto max-w-6xl px-6 py-8">
-        <ExploreGrid nodes={nodes} />
+        <ExploreGrid nodes={nodes} initialQuery={initialQuery ?? ""} />
       </section>
 
       {/* ── Footer ── */}

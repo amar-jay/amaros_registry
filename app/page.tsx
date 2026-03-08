@@ -8,10 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { HeroSearch } from "@/components/hero-search";
+import { NodeBeamVisualization, CrossOrgBeamVisualization } from "@/components/node-beam";
+import { listNodes, getNodeManifest, type NodeManifest } from "@/lib/r2";
 import {
-  IconSearch,
   IconDownload,
   IconNetwork,
   IconTopologyRing3,
@@ -31,64 +32,60 @@ import {
   IconPackage,
   IconClock,
   IconStack2,
+  IconCloud,
+  IconMail,
+  IconFileSearch,
+  IconEye,
+  IconTransform,
+  IconCode,
+  IconServer,
 } from "@tabler/icons-react";
+import type { Icon } from "@tabler/icons-react";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 
-const FEATURED_NODES = [
-  {
-    name: "llm-inference",
-    description:
-      "Call OpenAI, Anthropic, Ollama, or any LLM provider. Handles retries, streaming, and token tracking.",
-    downloads: "12.4k",
-    version: "2.1.0",
-    icon: IconBrain,
-    tags: ["ai", "inference", "models"],
-  },
-  {
-    name: "http-request",
-    description:
-      "Make HTTP requests to any external API. Supports auth, rate limiting, and response parsing.",
-    downloads: "9.8k",
-    version: "1.5.3",
-    icon: IconApi,
-    tags: ["http", "api", "external"],
-  },
-  {
-    name: "sqlite-store",
-    description:
-      "Persistent key-value and relational storage backed by SQLite. Auto-migration support.",
-    downloads: "8.2k",
-    version: "3.0.1",
-    icon: IconDatabase,
-    tags: ["storage", "database", "persistence"],
-  },
-  {
-    name: "msg-relay",
-    description:
-      "Send and receive messages across WhatsApp, Telegram, Slack, and Discord via unified interface.",
-    downloads: "6.1k",
-    version: "1.2.0",
-    icon: IconMessageCircle,
-    tags: ["messaging", "relay", "integration"],
-  },
-  {
-    name: "web-scraper",
-    description:
-      "Fetch and parse web content. Headless browser support, CSS selectors, and structured extraction.",
-    downloads: "5.7k",
-    version: "2.0.4",
-    icon: IconWorldWww,
-    tags: ["scraping", "web", "extraction"],
-  },
-  {
-    name: "cron-scheduler",
-    description:
-      "Schedule recurring tasks with cron expressions. Supports event-driven triggers and chaining.",
-    downloads: "7.3k",
-    version: "1.8.2",
-    icon: IconClock,
-    tags: ["scheduler", "cron", "events"],
-  },
-];
+/** Map node names or tags to appropriate icons */
+const NODE_ICON_MAP: Record<string, Icon> = {
+  "llm-inference": IconBrain,
+  "http-request": IconApi,
+  "sqlite-store": IconDatabase,
+  "msg-relay": IconMessageCircle,
+  "web-scraper": IconWorldWww,
+  "cron-scheduler": IconClock,
+  "vector-search": IconFileSearch,
+  "file-watcher": IconEye,
+  "email-sender": IconMail,
+  "json-transform": IconTransform,
+};
+
+const TAG_ICON_MAP: Record<string, Icon> = {
+  ai: IconBrain,
+  api: IconApi,
+  database: IconDatabase,
+  storage: IconDatabase,
+  messaging: IconMessageCircle,
+  web: IconWorldWww,
+  scheduler: IconClock,
+  cloud: IconCloud,
+  server: IconServer,
+  code: IconCode,
+};
+
+function getNodeIcon(node: NodeManifest): Icon {
+  if (NODE_ICON_MAP[node.name]) return NODE_ICON_MAP[node.name];
+  for (const tag of node.tags) {
+    if (TAG_ICON_MAP[tag]) return TAG_ICON_MAP[tag];
+  }
+  return IconHexagons;
+}
+
+function totalDownloads(node: NodeManifest) {
+  return node.versions.reduce((sum, v) => sum + v.downloads, 0);
+}
+
+function formatCount(n: number) {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return n.toString();
+}
 
 const CONCEPTS = [
   {
@@ -117,7 +114,20 @@ const CONCEPTS = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  // Fetch all nodes from R2 and sort by total downloads
+  const names = await listNodes(500);
+  const allNodes: NodeManifest[] = [];
+  for (const name of names) {
+    const manifest = await getNodeManifest(name);
+    if (manifest) allNodes.push(manifest);
+  }
+  allNodes.sort((a, b) => totalDownloads(b) - totalDownloads(a));
+
+  const popularNodes = allNodes.slice(0, 6);
+  const totalDl = allNodes.reduce((sum, n) => totalDownloads(n) + sum, 0);
+  const totalOrgs = new Set(allNodes.map((n) => n.organization).filter(Boolean)).size;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── Navbar ── */}
@@ -148,6 +158,7 @@ export default function Home() {
             </Button>
           </div>
         </div>
+      	<ScrollProgress className="sticky bottom-0" />
       </nav>
 
       {/* ── Hero ── */}
@@ -174,16 +185,7 @@ export default function Home() {
           </p>
 
           {/* Search */}
-          <div className="mx-auto mt-10 flex max-w-xl items-center gap-2">
-            <div className="relative flex-1">
-              <IconSearch className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search nodes... (e.g. llm-inference, sqlite-store)"
-                className="h-11 pl-9 text-sm"
-              />
-            </div>
-            <Button size="lg">Search</Button>
-          </div>
+          <HeroSearch />
 
           {/* Quick install */}
           <div className="mx-auto mt-6 flex max-w-md items-center justify-center gap-2 rounded-lg border bg-muted/50 px-4 py-2.5 font-mono text-sm">
@@ -197,17 +199,17 @@ export default function Home() {
           <div className="mt-12 flex items-center justify-center gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <IconPackage className="size-4" />
-              <span><strong className="text-foreground">128</strong> nodes</span>
+              <span><strong className="text-foreground">{allNodes.length}</strong> nodes</span>
             </div>
             <Separator orientation="vertical" className="h-4" />
             <div className="flex items-center gap-2">
               <IconNetwork className="size-4" />
-              <span><strong className="text-foreground">42</strong> organizations</span>
+              <span><strong className="text-foreground">{totalOrgs}</strong> organizations</span>
             </div>
             <Separator orientation="vertical" className="h-4" />
             <div className="flex items-center gap-2">
               <IconDownload className="size-4" />
-              <span><strong className="text-foreground">84k</strong> installs</span>
+              <span><strong className="text-foreground">{formatCount(totalDl)}</strong> installs</span>
             </div>
           </div>
         </div>
@@ -232,7 +234,10 @@ export default function Home() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURED_NODES.map((node) => (
+          {popularNodes.map((node) => {
+            const NodeIcon = getNodeIcon(node);
+            const dl = totalDownloads(node);
+            return (
             <Link key={node.name} href={`/nodes/${node.name}`}>
             <Card
               className="group cursor-pointer transition-colors hover:border-primary/40 h-full"
@@ -241,20 +246,20 @@ export default function Home() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex size-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <node.icon className="size-5" />
+                      <NodeIcon className="size-5" />
                     </div>
                     <div>
                       <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors">
                         {node.name}
                       </CardTitle>
                       <span className="text-xs text-muted-foreground">
-                        v{node.version}
+                        v{node.latest}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <IconDownload className="size-3" />
-                    {node.downloads}
+                    {formatCount(dl)}
                   </div>
                 </div>
               </CardHeader>
@@ -276,7 +281,8 @@ export default function Home() {
               </CardContent>
             </Card>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -370,66 +376,58 @@ export default function Home() {
 
       <Separator />
 
-      {/* ── Architecture strip ── */}
+      {/* ── Node Communication ── */}
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="rounded-xl border bg-muted/30 p-8 md:p-12">
-          <div className="flex flex-col items-center gap-8 md:flex-row md:gap-12">
-            {/* Memory hierarchy visual */}
-            <div className="flex w-full flex-col items-center gap-3 md:w-1/3">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Memory Hierarchy
-              </p>
-              {[
-                { label: "In-Memory", sublabel: "Hot / real-time", color: "bg-primary" },
-                { label: "File (README)", sublabel: "Context / docs", color: "bg-primary/70" },
-                { label: "SQLite", sublabel: "Persistent / structured", color: "bg-primary/40" },
-              ].map((tier, i) => (
-                <div
-                  key={tier.label}
-                  className={`flex w-full items-center justify-between rounded-md border px-4 py-3`}
-                  style={{ maxWidth: `${100 - i * 5}%` }}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className={`size-2.5 rounded-full ${tier.color}`} />
-                    <span className="text-sm font-medium">{tier.label}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {tier.sublabel}
-                  </span>
-                </div>
-              ))}
+        <div className="mb-10 text-center">
+          <h2 className="text-2xl font-bold tracking-tight">Node Communication</h2>
+          <p className="mt-2 text-muted-foreground">
+            Every node connects to the AMAROS master — messages flow
+            bidirectionally through topics and events
+          </p>
+        </div>
+        <div className="mx-auto max-w-2xl">
+          <NodeBeamVisualization />
+        </div>
+        <div className="mx-auto mt-8 grid max-w-2xl gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <IconCpu className="size-4 text-primary" />
+              Same Organization
             </div>
-
-            <Separator orientation="vertical" className="hidden h-32 md:block" />
-
-            {/* Node communication */}
-            <div className="flex flex-1 flex-col gap-4">
-              <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                Node Communication
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-md border bg-background p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <IconCpu className="size-4 text-primary" />
-                    Same Organization
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Direct function calls, shared memory, zero-copy data.
-                  </p>
-                </div>
-                <div className="rounded-md border bg-background p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <IconNetwork className="size-4 text-primary" />
-                    Cross Organization
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Message passing over topics, serialized payloads, heartbeat-verified.
-                  </p>
-                </div>
-              </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Direct function calls, shared memory, zero-copy data.
+            </p>
+          </div>
+          <div className="rounded-lg border bg-card p-4">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <IconNetwork className="size-4 text-primary" />
+              Cross Organization
             </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Message passing over topics, serialized payloads, heartbeat-verified.
+            </p>
           </div>
         </div>
+      </section>
+
+      <Separator />
+
+      {/* ── Cross-Org Communication ── */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <div className="mb-10 text-center">
+          <h2 className="text-2xl font-bold tracking-tight">Cross-Organization Mesh</h2>
+          <p className="mt-2 text-muted-foreground">
+            Organizations maintain their own master nodes. Masters communicate
+            bidirectionally — serialized payloads, heartbeat-verified, across boundaries.
+          </p>
+        </div>
+        <div className="mx-auto max-w-3xl">
+          <CrossOrgBeamVisualization />
+        </div>
+        <p className="mx-auto mt-6 max-w-xl text-center text-sm text-muted-foreground">
+          Nodes within an org use direct function calls. Across orgs, masters
+          relay messages over topics with serialized payloads — like ROS meets ZeroMQ.
+        </p>
       </section>
 
       {/* ── Footer ── */}

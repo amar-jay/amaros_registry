@@ -41,8 +41,14 @@ function formatDownloads(n: number) {
   return n.toString();
 }
 
-export function ExploreGrid({ nodes }: { nodes: NodeManifest[] }) {
-  const [query, setQuery] = useState("");
+export function ExploreGrid({
+  nodes,
+  initialQuery = "",
+}: {
+  nodes: NodeManifest[];
+  initialQuery?: string;
+}) {
+  const [query, setQuery] = useState(initialQuery);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOption>("downloads");
 
