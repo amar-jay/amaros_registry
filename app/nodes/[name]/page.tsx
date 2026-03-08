@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +42,11 @@ import {
   IconInfoCircle,
 } from "@tabler/icons-react";
 import { Navbar } from "@/components/navbar";
-import { getNodeManifest, getNodeReadme, type NodeManifest } from "@/lib/r2";
+import {
+  getNodeManifest,
+  getNodeReadme,
+  type NodeManifest,
+} from "@/lib/r2";
 
 // ── Data fetching ────────────────────────────────────────────
 
@@ -107,6 +112,10 @@ export default async function NodePage({
   const latestVersion = manifest.versions.find(
     (v) => v.version === manifest.latest,
   );
+  const hdrs = await headers();
+  const host = hdrs.get("host") ?? "localhost:3000";
+  const proto = hdrs.get("x-forwarded-proto") ?? "http";
+  const tarballApiUrl = `${proto}://${host}/api/nodes/${manifest.name}/${manifest.latest}`;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -243,6 +252,25 @@ export default async function NodePage({
                   </Button>
                 </>
               )}
+
+              <Separator />
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Tarball</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <CopyButton text={`${tarballApiUrl}?download`} variant="dark" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    asChild
+                  >
+                    <a href={`${tarballApiUrl}?download`}>
+                      <IconDownload className="size-4" />
+                      Download
+                    </a>
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

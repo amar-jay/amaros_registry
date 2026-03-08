@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import {
   getNodeManifest,
-  getNodeDownloadUrl,
-  getPresignedDownloadUrl,
+  getNodeTarball,
 } from "@/lib/r2";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ name: string; version: string }> },
 ) {
   const { name, version } = await params;
+  const { searchParams } = new URL(request.url);
 
   const manifest = await getNodeManifest(name);
   if (!manifest) {
@@ -32,19 +32,30 @@ export async function GET(
     );
   }
 
-  // Try public URL first, fall back to presigned
-  const publicUrl = getNodeDownloadUrl(name, resolvedVersion);
-  const downloadUrl =
-    publicUrl ??
-    (await getPresignedDownloadUrl(
-      `nodes/${name}/versions/${resolvedVersion}.tar.gz`,
-    ));
+  // If ?download is present, stream the tarball directly
+  if (searchParams.has("download")) {
+    const obj = await getNodeTarball(name, resolvedVersion);
+    if (!obj?.Body) {
+      return NextResponse.json(
+        { error: "Tarball not found in storage" },
+        { status: 404 },
+      );
+    }
+
+    const bytes = await obj.Body.transformToByteArray();
+    return new Response(Buffer.from(bytes), {
+      headers: {
+        "Content-Type": "application/gzip",
+        "Content-Disposition": `attachment; filename="${name}-${resolvedVersion}.tar.gz"`,
+        "Content-Length": String(bytes.length),
+      },
+    });
+  }
 
   return NextResponse.json({
     name,
     version: resolvedVersion,
     checksum: versionEntry.checksum,
     size: versionEntry.size,
-    downloadUrl,
   });
 }
