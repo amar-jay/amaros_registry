@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { publishNode, type NodeManifest } from "@/lib/r2";
+import { computeChecksum } from "@/lib/utils";
 
 export async function POST(request: Request) {
   // TODO: Add authentication (API key, JWT, etc.)
@@ -48,6 +49,16 @@ export async function POST(request: Request) {
     );
   }
 
+	// if manifest.latest doesn't include checksum, compute it from the tarball and add it to the manifest
+	if (!manifest.versions.find((v) => v.version === manifest.latest)?.checksum) {
+		const tarballBuffer = Buffer.from(await tarball.arrayBuffer());
+		const checksum = await computeChecksum(tarballBuffer);
+		manifest.versions = manifest.versions.map((v) =>
+			v.version === manifest.latest ? { ...v, checksum } : v,
+		);
+	}
+
+
   const tarballBuffer = Buffer.from(await tarball.arrayBuffer());
   const readmeText =
     readme && typeof readme === "string" ? readme : undefined;
@@ -69,3 +80,4 @@ export async function POST(request: Request) {
     { status: 201 },
   );
 }
+

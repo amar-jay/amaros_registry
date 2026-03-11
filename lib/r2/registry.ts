@@ -72,7 +72,12 @@ export async function publishNode(
       `Version ${version} of ${manifest.name} already exists. Bump the version to publish.`,
     );
   }
-
+	const manifestVersionChecksum = manifest.versions.find((v) => v.version === version)?.checksum ?? "";
+	if (manifestVersionChecksum == "") {
+		throw new Error(
+			`Manifest version entry for ${version} is missing checksum. Ensure the manifest includes a checksum for the new version.`,
+		);
+	}
   // Upload tarball
   await putObject(
     tarballKey(manifest.name, version),
@@ -81,7 +86,7 @@ export async function publishNode(
     {
       version,
       name: manifest.name,
-      checksum: manifest.versions.find((v) => v.version === version)?.checksum ?? "",
+      checksum: manifestVersionChecksum,
     },
   );
 
