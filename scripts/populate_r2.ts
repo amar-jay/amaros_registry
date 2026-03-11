@@ -3,8 +3,17 @@
  * Run with: bun run scripts/populate_r2.ts
  */
 
+import { createHash } from "crypto";
+import { gzipSync } from "zlib";
 import { putObject } from "../lib/r2/bucket";
 import type { NodeManifest } from "../lib/r2/registry";
+
+const LOREM = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
+incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
+mollit anim id est laborum.`;
 
 // ── Seed data ───────────────────────────────────────────────
 
@@ -26,22 +35,22 @@ const NODES: {
         {
           version: "1.0.0",
           publishedAt: "2025-06-15T10:00:00Z",
-          checksum: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
-          size: 24_500,
+          checksum: "",
+          size: 0,
           downloads: 3200,
         },
         {
           version: "2.0.0",
           publishedAt: "2025-11-02T14:30:00Z",
-          checksum: "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
-          size: 31_200,
+          checksum: "",
+          size: 0,
           downloads: 5800,
         },
         {
           version: "2.1.0",
           publishedAt: "2026-01-20T09:15:00Z",
-          checksum: "c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4",
-          size: 33_400,
+          checksum: "",
+          size: 0,
           downloads: 3400,
         },
       ],
@@ -106,22 +115,22 @@ retry:
         {
           version: "1.0.0",
           publishedAt: "2025-05-10T08:00:00Z",
-          checksum: "d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5",
-          size: 18_300,
+          checksum: "",
+          size: 0,
           downloads: 4100,
         },
         {
           version: "1.5.0",
           publishedAt: "2025-09-18T11:45:00Z",
-          checksum: "e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6",
-          size: 21_600,
+          checksum: "",
+          size: 0,
           downloads: 3200,
         },
         {
           version: "1.5.3",
           publishedAt: "2026-02-05T16:20:00Z",
-          checksum: "f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1",
-          size: 22_100,
+          checksum: "",
+          size: 0,
           downloads: 2500,
         },
       ],
@@ -179,22 +188,22 @@ rate_limit:
         {
           version: "1.0.0",
           publishedAt: "2025-04-01T12:00:00Z",
-          checksum: "1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b",
-          size: 15_800,
+          checksum: "",
+          size: 0,
           downloads: 2100,
         },
         {
           version: "2.0.0",
           publishedAt: "2025-08-22T09:30:00Z",
-          checksum: "2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c",
-          size: 19_500,
+          checksum: "",
+          size: 0,
           downloads: 3000,
         },
         {
           version: "3.0.1",
           publishedAt: "2026-01-10T14:00:00Z",
-          checksum: "3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d",
-          size: 22_300,
+          checksum: "",
+          size: 0,
           downloads: 3100,
         },
       ],
@@ -262,22 +271,22 @@ backup:
         {
           version: "1.0.0",
           publishedAt: "2025-07-20T10:00:00Z",
-          checksum: "4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e",
-          size: 28_700,
+          checksum: "",
+          size: 0,
           downloads: 2800,
         },
         {
           version: "1.1.0",
           publishedAt: "2025-10-15T13:00:00Z",
-          checksum: "5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f",
-          size: 31_200,
+          checksum: "",
+          size: 0,
           downloads: 1900,
         },
         {
           version: "1.2.0",
           publishedAt: "2026-02-28T08:45:00Z",
-          checksum: "6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a2b3c4d5e6f1a",
-          size: 34_500,
+          checksum: "",
+          size: 0,
           downloads: 1400,
         },
       ],
@@ -349,22 +358,22 @@ platforms:
         {
           version: "1.0.0",
           publishedAt: "2025-06-01T09:00:00Z",
-          checksum: "7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b",
-          size: 42_100,
+          checksum: "",
+          size: 0,
           downloads: 1800,
         },
         {
           version: "2.0.0",
           publishedAt: "2025-12-01T11:30:00Z",
-          checksum: "8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c",
-          size: 48_900,
+          checksum: "",
+          size: 0,
           downloads: 2200,
         },
         {
           version: "2.0.4",
           publishedAt: "2026-02-15T15:00:00Z",
-          checksum: "9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d1e2f7a8b9c0d",
-          size: 49_600,
+          checksum: "",
+          size: 0,
           downloads: 1700,
         },
       ],
@@ -435,22 +444,22 @@ schema:
         {
           version: "1.0.0",
           publishedAt: "2025-04-15T07:00:00Z",
-          checksum: "0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e",
-          size: 12_400,
+          checksum: "",
+          size: 0,
           downloads: 2900,
         },
         {
           version: "1.5.0",
           publishedAt: "2025-08-10T10:00:00Z",
-          checksum: "1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f",
-          size: 15_800,
+          checksum: "",
+          size: 0,
           downloads: 2400,
         },
         {
           version: "1.8.2",
           publishedAt: "2026-01-05T12:30:00Z",
-          checksum: "2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a4b5c0d1e2f3a",
-          size: 17_200,
+          checksum: "",
+          size: 0,
           downloads: 2000,
         },
       ],
@@ -527,15 +536,15 @@ jobs:
         {
           version: "1.0.0",
           publishedAt: "2025-09-01T10:00:00Z",
-          checksum: "aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44",
-          size: 35_600,
+          checksum: "",
+          size: 0,
           downloads: 1500,
         },
         {
           version: "1.3.0",
           publishedAt: "2026-02-01T14:00:00Z",
-          checksum: "bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55",
-          size: 38_200,
+          checksum: "",
+          size: 0,
           downloads: 1800,
         },
       ],
@@ -594,15 +603,15 @@ storage: ./data/vectors/
         {
           version: "1.0.0",
           publishedAt: "2025-05-20T08:00:00Z",
-          checksum: "cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66",
-          size: 8_900,
+          checksum: "",
+          size: 0,
           downloads: 4200,
         },
         {
           version: "1.1.0",
           publishedAt: "2025-11-10T16:00:00Z",
-          checksum: "dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11",
-          size: 10_200,
+          checksum: "",
+          size: 0,
           downloads: 3100,
         },
       ],
@@ -660,15 +669,15 @@ ignore:
         {
           version: "1.0.0",
           publishedAt: "2025-10-05T09:00:00Z",
-          checksum: "ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22",
-          size: 19_300,
+          checksum: "",
+          size: 0,
           downloads: 1200,
         },
         {
           version: "1.0.2",
           publishedAt: "2026-01-18T11:30:00Z",
-          checksum: "ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33dd44ee55ff66aa11bb22cc33",
-          size: 20_100,
+          checksum: "",
+          size: 0,
           downloads: 950,
         },
       ],
@@ -731,22 +740,22 @@ templates_dir: ./templates/
         {
           version: "1.0.0",
           publishedAt: "2025-03-15T10:00:00Z",
-          checksum: "1122334455667788990011223344556677889900112233445566778899001122",
-          size: 11_400,
+          checksum: "",
+          size: 0,
           downloads: 5100,
         },
         {
           version: "2.0.0",
           publishedAt: "2025-07-30T14:00:00Z",
-          checksum: "2233445566778899001122334455667788990011223344556677889900112233",
-          size: 14_800,
+          checksum: "",
+          size: 0,
           downloads: 3800,
         },
         {
           version: "2.2.0",
           publishedAt: "2026-02-20T09:00:00Z",
-          checksum: "3344556677889900112233445566778899001122334455667788990011223344",
-          size: 16_200,
+          checksum: "",
+          size: 0,
           downloads: 2200,
         },
       ],
@@ -794,17 +803,87 @@ pipeline:
   },
 ];
 
-// ── Upload logic ────────────────────────────────────────────
+// ── Tarball helpers ──────────────────────────────────────────
 
-function makeDummyTarball(name: string, version: string): Buffer {
-  // Create a small placeholder tarball (not a real gzip, just seed data)
-  const content = `AMAROS Node Package: ${name}@${version}\nThis is placeholder data for seeding.\n`;
-  return Buffer.from(content);
+/** Build a minimal valid .tar.gz containing a single file with lorem ipsum content. */
+function makeTarball(name: string, version: string): Buffer {
+  const fileName = `${name}-${version}/index.ts`;
+  const fileBody = `// ${name}@${version}\n// AMAROS node package\n\nexport const NAME = "${name}";\nexport const VERSION = "${version}";\n\n/**\n * ${LOREM}\n */\nexport function run() {\n  // ${LOREM}\n  return { name: NAME, version: VERSION };\n}\n`;
+  const fileContent = Buffer.from(fileBody);
+
+  // -- Build a POSIX tar archive --
+  const header = Buffer.alloc(512);
+  // File name (0-99)
+  header.write(fileName, 0, Math.min(fileName.length, 100), "utf-8");
+  // File mode (100-107)
+  header.write("0000644\0", 100, 8, "utf-8");
+  // Owner ID (108-115)
+  header.write("0001000\0", 108, 8, "utf-8");
+  // Group ID (116-123)
+  header.write("0001000\0", 116, 8, "utf-8");
+  // File size in octal (124-135)
+  header.write(fileContent.length.toString(8).padStart(11, "0") + "\0", 124, 12, "utf-8");
+  // Modification time (136-147) — epoch seconds
+  const mtime = Math.floor(Date.now() / 1000);
+  header.write(mtime.toString(8).padStart(11, "0") + "\0", 136, 12, "utf-8");
+  // Initialize checksum field with spaces (148-155)
+  header.write("        ", 148, 8, "utf-8");
+  // Type flag: regular file (156)
+  header.write("0", 156, 1, "utf-8");
+  // USTAR magic (257-262) + version (263-264)
+  header.write("ustar\0", 257, 6, "utf-8");
+  header.write("00", 263, 2, "utf-8");
+
+  // Compute tar header checksum (sum of all bytes, treating checksum field as spaces)
+  let chksum = 0;
+  for (let i = 0; i < 512; i++) chksum += header[i];
+  header.write(chksum.toString(8).padStart(6, "0") + "\0 ", 148, 8, "utf-8");
+
+  // File content padded to 512-byte boundary
+  const paddedLen = Math.ceil(fileContent.length / 512) * 512;
+  const paddedContent = Buffer.alloc(paddedLen);
+  fileContent.copy(paddedContent);
+
+  // End-of-archive: two 512-byte zero blocks
+  const endMarker = Buffer.alloc(1024);
+
+  const tar = Buffer.concat([header, paddedContent, endMarker]);
+  return Buffer.from(gzipSync(tar));
+}
+
+function sha256(data: Buffer): string {
+  return createHash("sha256").update(data).digest("hex");
 }
 
 async function uploadNode(node: { manifest: NodeManifest; readme: string }) {
   const { manifest, readme } = node;
   const name = manifest.name;
+
+  // Generate real tarballs and fill in real checksum + size
+  for (const ver of manifest.versions) {
+    const tarball = makeTarball(name, ver.version);
+    ver.checksum = sha256(tarball);
+    ver.size = tarball.length;
+
+    console.log(`  Uploading tarball v${ver.version} (${tarball.length} bytes, sha256:${ver.checksum.slice(0, 12)}…)…`);
+    await putObject(
+      `nodes/${name}/versions/${ver.version}.tar.gz`,
+      tarball,
+      "application/gzip",
+      {
+        version: ver.version,
+        name,
+        checksum: ver.checksum,
+      },
+    );
+  }
+
+  // Derive createdAt / updatedAt from version timestamps
+  const sorted = [...manifest.versions].sort(
+    (a, b) => new Date(a.publishedAt).getTime() - new Date(b.publishedAt).getTime(),
+  );
+  manifest.createdAt = sorted[0].publishedAt;
+  manifest.updatedAt = sorted[sorted.length - 1].publishedAt;
 
   console.log(`  Uploading metadata...`);
   await putObject(
@@ -815,21 +894,6 @@ async function uploadNode(node: { manifest: NodeManifest; readme: string }) {
 
   console.log(`  Uploading readme...`);
   await putObject(`nodes/${name}/readme.md`, readme, "text/markdown");
-
-  for (const version of manifest.versions) {
-    console.log(`  Uploading tarball v${version.version}...`);
-    const tarball = makeDummyTarball(name, version.version);
-    await putObject(
-      `nodes/${name}/versions/${version.version}.tar.gz`,
-      tarball,
-      "application/gzip",
-      {
-        version: version.version,
-        name,
-        checksum: version.checksum,
-      },
-    );
-  }
 }
 
 // ── Main ────────────────────────────────────────────────────
