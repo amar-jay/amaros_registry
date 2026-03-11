@@ -42,18 +42,14 @@ import {
   IconInfoCircle,
 } from "@tabler/icons-react";
 import { Navbar } from "@/components/navbar";
-import {
-  getNodeManifest,
-  getNodeReadme,
-  type NodeManifest,
-} from "@/lib/r2";
+import { fetchNode, type NodeManifest } from "@/lib/bucket_api";
 
 // ── Data fetching ────────────────────────────────────────────
 
 async function getNode(name: string) {
-  const manifest = await getNodeManifest(name);
-  if (!manifest) return null;
-  const readme = await getNodeReadme(name);
+  const data = await fetchNode(name);
+  if (!data) return null;
+  const { readme, ...manifest } = data;
   return { manifest, readme };
 }
 

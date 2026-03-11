@@ -11,7 +11,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { HeroSearch } from "@/components/hero-search";
 import { NodeBeamVisualization, CrossOrgBeamVisualization, SubscriberFirstBeam } from "@/components/node-beam";
-import { listNodes, getNodeManifest, type NodeManifest } from "@/lib/r2";
+import { fetchAllNodes, type NodeManifest } from "@/lib/bucket_api";
 import {
   IconDownload,
   IconNetwork,
@@ -114,13 +114,8 @@ const CONCEPTS = [
 ];
 
 export default async function Home() {
-  // Fetch all nodes from R2 and sort by total downloads
-  const names = await listNodes(500);
-  const allNodes: NodeManifest[] = [];
-  for (const name of names) {
-    const manifest = await getNodeManifest(name);
-    if (manifest) allNodes.push(manifest);
-  }
+  // Fetch all nodes from API and sort by total downloads
+  const allNodes = await fetchAllNodes();
   allNodes.sort((a, b) => totalDownloads(b) - totalDownloads(a));
 
   const popularNodes = allNodes.slice(0, 6);

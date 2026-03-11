@@ -8,7 +8,7 @@ import {
   IconDownload,
 } from "@tabler/icons-react";
 import { Navbar } from "@/components/navbar";
-import { listNodes, getNodeManifest, type NodeManifest } from "@/lib/r2";
+import { fetchAllNodes } from "@/lib/bucket_api";
 
 export const metadata: Metadata = {
   title: "Explore Nodes — AMAROS Registry",
@@ -16,23 +16,13 @@ export const metadata: Metadata = {
     "Browse, search, and discover distributed agent nodes in the AMAROS registry.",
 };
 
-async function getAllNodes(): Promise<NodeManifest[]> {
-  const names = await listNodes(500);
-  const manifests: NodeManifest[] = [];
-  for (const name of names) {
-    const manifest = await getNodeManifest(name);
-    if (manifest) manifests.push(manifest);
-  }
-  return manifests;
-}
-
 export default async function ExplorePage({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q: initialQuery } = await searchParams;
-  const nodes = await getAllNodes();
+  const nodes = await fetchAllNodes();
 
   const totalDl = nodes.reduce(
     (sum, n) => sum + n.versions.reduce((s, v) => s + v.downloads, 0),
